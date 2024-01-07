@@ -1,3 +1,4 @@
+import pytest
 from faker import Faker
 from sqlalchemy import delete, insert, select, update
 
@@ -41,6 +42,22 @@ def test_insert():
         session.commit()
 
 
+def test_insert_with_orm():
+    """生徒を追加する(ORM 使用)
+
+    ref: https://docs.sqlalchemy.org/en/20/tutorial/orm_data_manipulation.html#inserting-rows-using-the-orm-unit-of-work-pattern
+    """  # noqa
+    with Session() as session:
+        stmt = insert(Student).values(
+            name=faker.name(),
+            gender=faker.pyint(min_value=1, max_value=2),
+            address=faker.address(),
+            score=faker.pyint(min_value=0, max_value=100),
+        )
+        session.execute(stmt)
+        session.commit()
+
+
 def test_update():
     """生徒の名前を更新する
 
@@ -60,6 +77,19 @@ def test_update():
         session.commit()
 
 
+def test_update_with_orm():
+    """生徒の名前を更新する(ORM 使用)
+
+    ref: https://docs.sqlalchemy.org/en/20/tutorial/orm_data_manipulation.html#updating-orm-objects-using-the-unit-of-work-pattern
+    """  # noqa
+    with Session() as session:
+        stmt = select(Student).where(Student.id == 1)
+        result = session.execute(stmt)
+        student = result.scalar()
+        student.name = f"UPDATE S{faker.name()}"
+        session.commit()
+
+
 def test_delete():
     """生徒を削除する
 
@@ -70,4 +100,19 @@ def test_delete():
     with Session() as session:
         stmt = delete(Student).where(Student.id == 1)
         session.execute(stmt)
+        session.commit()
+
+
+@pytest.mark.xfail(reason="エラーとなる。cascade に関する確認が必要")
+def test_delete_with_orm():
+    """生徒を削除する(ORM 使用)
+
+    ref: https://docs.sqlalchemy.org/en/20/tutorial/orm_data_manipulation.html#deleting-orm-objects-using-the-unit-of-work-pattern
+    ref: https://docs.sqlalchemy.org/en/20/orm/cascades.html#using-foreign-key-on-delete-cascade-with-orm-relationships
+    """  # noqa
+    with Session() as session:
+        stmt = select(Student).where(Student.id == 2)
+        result = session.execute(stmt)
+        student = result.scalar()
+        session.delete(student)
         session.commit()
