@@ -299,6 +299,8 @@ def test_join_with_subquery_and_alias():
     StudentClazz の student_id や class_id にアクセスできる。
     ただし N+1 問題になるため使いどころは要注意。
 
+    N+1 問題の対応版は `04_relationships_tips.py::test_contains_eager_with_subquery_and_alias_and_join` を参照。
+
     ref: https://docs.sqlalchemy.org/en/20/orm/queryguide/select.html#joining-to-subqueries
     """  # noqa
     with Session() as session:
