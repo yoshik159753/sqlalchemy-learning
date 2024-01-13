@@ -17,7 +17,7 @@ from sqlalchemy.orm.exc import DetachedInstanceError
 
 import models_club  # noqa
 from db import Session
-from models import Clazz, Email, Student, StudentClazz
+from models import Clazz, Email, Student, StudentClazz, Teacher
 
 
 def test_basic_relationship():
@@ -427,3 +427,23 @@ def test_eager_loading_specific_columns():
         with pytest.raises(InvalidRequestError) as e:
             print(f"### student_clazz.student.address[{student_clazz.student.address}]")
         print(f"### ***ERROR*** [{e}]")
+
+
+def test_primaryjoin():
+    """担当者からのリレーションで担当している部活を取得する
+
+    担当者と部活は外部キー制約を付与していない。
+    このため primaryjoin と foreign_keys による設定が必要となる。(Teacher モデルを参照)
+
+    ref: https://docs.sqlalchemy.org/en/20/orm/join_conditions.html#relationship-primaryjoin
+    ref: https://docs.sqlalchemy.org/en/20/orm/join_conditions.html#creating-custom-foreign-conditions
+    ref: https://docs.sqlalchemy.org/en/20/orm/relationship_api.html#sqlalchemy.orm.relationship.params.primaryjoin
+    """  # noqa
+    with Session() as session:
+        stmt = select(Teacher).options(joinedload(Teacher.club))
+        for teacher in session.execute(stmt).scalars():
+            print(
+                f"### teacher.id[{teacher.id}]"
+                f" teacher.name[{teacher.name}]"
+                f" teacher.club.name[{teacher.club.name if teacher.club else None}]"
+            )

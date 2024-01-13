@@ -13,7 +13,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 # ref: https://github.com/sqlalchemy/sqlalchemy/discussions/9576
 # ref: https://mypy.readthedocs.io/en/stable/runtime_troubles.html#import-cycles
 if TYPE_CHECKING:
-    from models_club import StudentClub
+    from models_club import Club, StudentClub
 
 
 class Base(DeclarativeBase):
@@ -82,6 +82,10 @@ class Teacher(Base):
 
     id: Mapped[int] = mapped_column(INTEGER, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    club: Mapped["Club"] = relationship(
+        primaryjoin="Teacher.id==Club.teacher_id", foreign_keys=id
+    )
 
 
 class Clazz(Base):
