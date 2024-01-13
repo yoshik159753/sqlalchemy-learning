@@ -83,6 +83,7 @@ class Teacher(Base):
     id: Mapped[int] = mapped_column(INTEGER, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
 
+    # primaryjoin については `04_relationships_tips.py::test_primaryjoin` を参照
     club: Mapped["Club"] = relationship(
         primaryjoin="Teacher.id==Club.teacher_id", foreign_keys=id
     )
