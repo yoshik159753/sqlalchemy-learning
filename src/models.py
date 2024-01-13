@@ -54,7 +54,7 @@ class Student(Base):
     #       親側の relationship に `uselist=False` を付与する
     # Classic Style: clazz = relationship("Clazz", uselist=False, back_populates="student")  # noqa
 
-    clubs: Mapped[list["StudentClub"]] = relationship()
+    clubs: Mapped[list["StudentClub"]] = relationship(back_populates="student")
 
     # 楽観的ロックの検証用。システム的に updated_at を更新するため version_id_generator は False となる
     __mapper_args__ = {"version_id_col": updated_at, "version_id_generator": False}

@@ -31,6 +31,6 @@ class StudentClub(Base):
         INTEGER, ForeignKey("clubs.id", ondelete="RESTRICT")
     )
 
-    student: Mapped["Student"] = relationship()
+    student: Mapped["Student"] = relationship(back_populates="clubs")
 
     __mapper_args__ = {"primary_key": [student_id, club_id]}

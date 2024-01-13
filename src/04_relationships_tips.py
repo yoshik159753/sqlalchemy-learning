@@ -258,6 +258,82 @@ def test_contains_eager():
             )
 
 
+def test_contains_eager_with_alias_and_join():
+    """
+
+    お試しとして Email -> Student -> Email の Eager ロードを検証する。
+    結果として次のようなレコード群になるため `unique()` が必要となる。
+
+    [student1のeamil1, student1, student1のeamil1]
+    [student1のeamil1, student1, student1のeamil2]
+    [student1のeamil2, student1, student1のeamil1]
+    [student1のeamil2, student1, student1のeamil2]
+
+    ref: https://github.com/sqlalchemy/sqlalchemy/discussions/6876
+    ref: https://docs.sqlalchemy.org/en/20/orm/queryguide/select.html#using-relationship-to-join-between-aliased-targets
+    ref: https://docs.sqlalchemy.org/en/20/orm/internals.html#sqlalchemy.orm.PropComparator.of_type
+    """  # noqa
+    with Session() as session:
+        eamil_alias = aliased(Email)
+        stmt = (
+            select(Email)
+            .outerjoin(Email.student)
+            .outerjoin(Student.emails.of_type(eamil_alias))
+            .options(
+                contains_eager(Email.student).options(
+                    contains_eager(Student.emails.of_type(eamil_alias))
+                )
+            )
+        )
+        result = session.execute(stmt)
+        for email in result.scalars().unique().all():
+            emails = [email.email for email in email.student.emails]
+            print(
+                f"### email.student.id[{email.student.id}]"
+                f" email.student.name[{email.student.name}]"
+                f" email.student.emails[{emails}]"
+            )
+
+
+def test_contains_eager_with_subquery_and_alias_and_join():
+    """生徒からのリレーションでメールアドレスを昇順で一番上にくるもののみを取得する
+
+    `03_select_tips.py::test_join_with_subquery_and_alias()` の応用版。
+    not exists とサブクエリを使って最新(or 最古)のデータのみを join するテクニック。
+
+    ref: https://takakisan.com/sql-max-in-each-group/
+    """  # noqa
+    with Session() as session:
+        mail_alias = aliased(Email)
+        mail_sub_query = (
+            select(Email)
+            .where(
+                ~(
+                    select(1)
+                    .select_from(mail_alias)
+                    .where(
+                        mail_alias.student_id == Email.student_id,
+                        mail_alias.email < Email.email,
+                    )
+                ).exists()
+            )
+            .subquery()
+        )
+        mail_alias = aliased(Email, mail_sub_query)
+        stmt = (
+            select(Student)
+            .join(Student.emails.of_type(mail_alias))
+            .options(contains_eager(Student.emails.of_type(mail_alias)))
+        )
+        for student in session.execute(stmt).scalars().unique():
+            emails = [email.email for email in student.emails]
+            print(
+                f"### student.id[{student.id}]"
+                f" student.name[{student.name}]"
+                f" student.emails[{emails}]"
+            )
+
+
 def test_raiseload():
     """N+1 問題は絶対にゆるさんぞい
 
@@ -351,40 +427,3 @@ def test_eager_loading_specific_columns():
         with pytest.raises(InvalidRequestError) as e:
             print(f"### student_clazz.student.address[{student_clazz.student.address}]")
         print(f"### ***ERROR*** [{e}]")
-
-
-def test_aliasを使ったjoinとcontains_eagerロード():
-    """
-
-    お試しとして Email -> Student -> Email の Eager ロードを検証する。
-    結果として次のようなレコード群になるため `unique()` が必要となる。
-
-    [student1のeamil1, student1, student1のeamil1]
-    [student1のeamil1, student1, student1のeamil2]
-    [student1のeamil2, student1, student1のeamil1]
-    [student1のeamil2, student1, student1のeamil2]
-
-    ref: https://github.com/sqlalchemy/sqlalchemy/discussions/6876
-    ref: https://docs.sqlalchemy.org/en/20/orm/queryguide/select.html#using-relationship-to-join-between-aliased-targets
-    ref: https://docs.sqlalchemy.org/en/20/orm/internals.html#sqlalchemy.orm.PropComparator.of_type
-    """  # noqa
-    with Session() as session:
-        eamil_alias = aliased(Email)
-        stmt = (
-            select(Email)
-            .outerjoin(Email.student)
-            .outerjoin(Student.emails.of_type(eamil_alias))
-            .options(
-                contains_eager(Email.student).options(
-                    contains_eager(Student.emails.of_type(eamil_alias))
-                )
-            )
-        )
-        result = session.execute(stmt)
-        for email in result.scalars().unique().all():
-            emails = [email.email for email in email.student.emails]
-            print(
-                f"### email.student.id[{email.student.id}]"
-                f" email.student.name[{email.student.name}]"
-                f" email.student.emails[{emails}]"
-            )
