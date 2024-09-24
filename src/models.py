@@ -2,10 +2,12 @@
 
 ref: https://docs.sqlalchemy.org/en/20/tutorial/orm_related_objects.html
 """  # noqa
+
+import enum
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import INTEGER, ForeignKey, String, func
+from sqlalchemy import INTEGER, Enum, ForeignKey, String, func
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -20,6 +22,11 @@ class Base(DeclarativeBase):
     pass
 
 
+class Gender(enum.Enum):
+    MALE = 1
+    FEMALE = 2
+
+
 class Student(Base):
     """
     - Email に対しては one-to-many
@@ -30,6 +37,7 @@ class Student(Base):
     ref: https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html#one-to-one
     ref: https://docs.sqlalchemy.org/en/20/orm/relationship_api.html#sqlalchemy.orm.relationship
     ref: https://docs.sqlalchemy.org/en/20/orm/collection_api.html#customizing-collection-access
+    ref: https://docs.sqlalchemy.org/en/20/orm/declarative_tables.html#using-python-enum-or-pep-586-literal-types-in-the-type-map
 
     NOTE: `relationship()` の `back_populates` では、リレーション先に存在する attribute を指定する。存在しない場合はエラーとなる
     """  # noqa
@@ -38,8 +46,10 @@ class Student(Base):
 
     id: Mapped[int] = mapped_column(INTEGER, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    # TODO: enum とかで表したい
-    gender: Mapped[int] = mapped_column(INTEGER, nullable=False)
+    # NOTE: Enum 型にすると、テーブルには定義値の文字列を insert する。
+    #       この場合は MALE/FEMALE の Enum 型となる。
+    #       DDL 的には `/`gender/` enum('MALE','FEMALE') NOT NULL,`
+    gender: Mapped[Gender] = mapped_column(Enum(Gender))
     address: Mapped[str] = mapped_column(String(255), nullable=False)
     score: Mapped[int] = mapped_column(INTEGER, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(

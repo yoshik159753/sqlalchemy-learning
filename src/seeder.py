@@ -6,7 +6,16 @@ from faker import Faker
 from sqlalchemy import insert, select
 
 from db import Session, engine
-from models import Base, Clazz, Email, Student, StudentClazz, Teacher, TeacherClazz
+from models import (
+    Base,
+    Clazz,
+    Email,
+    Gender,
+    Student,
+    StudentClazz,
+    Teacher,
+    TeacherClazz,
+)
 from models_club import Club, StudentClub
 
 faker = Faker(["ja-JP"])
@@ -52,11 +61,11 @@ def add_club():
 def add_students():
     students = []
     for _ in range(300):
-        gender = faker.pyint(min_value=1, max_value=2)
+        gender = faker.random_element(elements=Gender)
         students.append(
             {
                 "name": f"S{faker.name_male()}"
-                if gender == 1
+                if gender == Gender.MALE
                 else f"S{faker.name_female()}",
                 "gender": gender,
                 "address": faker.address(),

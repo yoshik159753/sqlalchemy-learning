@@ -9,7 +9,7 @@ from sqlalchemy.orm.exc import StaleDataError
 
 import models_club  # noqa
 from db import Session
-from models import Student
+from models import Gender, Student
 
 
 def test_upsert():
@@ -20,7 +20,7 @@ def test_upsert():
     with Session() as session:
         stmt = (
             insert(Student)
-            .values(id=1, name="name", gender=1, address="address", score=50)
+            .values(id=1, name="name", gender=Gender.MALE, address="address", score=50)
             .on_duplicate_key_update(
                 name="name name name",
             )
@@ -34,19 +34,19 @@ def test_bulk_insert():
         students = [
             {
                 "name": "name1",
-                "gender": 1,
+                "gender": Gender.MALE,
                 "address": "address1",
                 "score": 33,
             },
             {
                 "name": "name2",
-                "gender": 2,
+                "gender": Gender.FEMALE,
                 "address": "address2",
                 "score": 66,
             },
             {
                 "name": "name3",
-                "gender": 1,
+                "gender": Gender.MALE,
                 "address": "address3",
                 "score": 99,
             },
@@ -213,7 +213,7 @@ def test_テストスイート向けのsavepointを利用したコミットの�
     connection = engine.connect()
     transaction = connection.begin()
     with Session(bind=connection, join_transaction_mode="create_savepoint") as session:
-        student = Student(name="name", gender=1, address="address", score=50)
+        student = Student(name="name", gender=Gender.MALE, address="address", score=50)
         session.add(student)
         session.commit()
         student_id = student.id
