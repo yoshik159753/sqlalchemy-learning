@@ -50,6 +50,11 @@ class Student(Base):
     #       この場合は MALE/FEMALE の Enum 型となる。
     #       DDL 的には `/`gender/` enum('MALE','FEMALE') NOT NULL,`
     gender: Mapped[Gender] = mapped_column(Enum(Gender))
+    # NOTE: 既存のテーブルが存在し varchar に対して後付けで Enum 型にしたい場合は
+    #       `native_enum=False` を付与する。
+    #       enum クラスに存在しないメンバ変数が含まれた場合は LookupError の
+    #       例外を発行する。
+    # gender: Mapped[Gender] = mapped_column(Enum(Gender, native_enum=False))
     address: Mapped[str] = mapped_column(String(255), nullable=False)
     score: Mapped[int] = mapped_column(INTEGER, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
