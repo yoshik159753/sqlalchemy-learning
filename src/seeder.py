@@ -70,6 +70,7 @@ def add_students():
                 "gender": gender,
                 "address": faker.address(),
                 "score": faker.pyint(min_value=0, max_value=100),
+                "is_active": faker.pybool(truth_probability=75),
             }
         )
     stmt = insert(Student).values(students)
