@@ -7,7 +7,7 @@ import enum
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import INTEGER, Enum, ForeignKey, String, func
+from sqlalchemy import INTEGER, Boolean, Enum, ForeignKey, String, func
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -57,6 +57,7 @@ class Student(Base):
     # gender: Mapped[Gender] = mapped_column(Enum(Gender, native_enum=False))
     address: Mapped[str] = mapped_column(String(255), nullable=False)
     score: Mapped[int] = mapped_column(INTEGER, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now()
     )

@@ -1,3 +1,5 @@
+from typing import Sequence, Tuple
+
 from faker import Faker
 from sqlalchemy import delete, insert, select, update
 
@@ -22,10 +24,12 @@ def test_select():
     with Session() as session:
         stmt = select(Student)
         result = session.execute(stmt)
-        students = result.all()
+        students: Sequence[Tuple[Student]] = result.all()
         print(f"### students[{students}]")
         for (student,) in students:
-            print(f"### student id[{student.id}] name[{student.name}]")
+            print(
+                f"### student id[{student.id}] name[{student.name}] gender[{student.gender}] is_active[{student.is_active}]"
+            )
 
 
 def test_insert():
