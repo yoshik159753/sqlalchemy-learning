@@ -24,6 +24,7 @@
       "depth": 3
     },
   ],
+  "python.analysis.typeCheckingMode": "basic",
   "python.testing.pytestArgs": [
     "src",
     "-s"

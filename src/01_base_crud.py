@@ -1,7 +1,7 @@
 from typing import Sequence, Tuple
 
 from faker import Faker
-from sqlalchemy import delete, insert, select, update
+from sqlalchemy import delete, false, insert, select, update
 
 # モデルを最初に使おうとするときには、依存するマッピングをすべて取り込むために、依存するモジュールすべてを最初にインポートする必要がある。
 # 循環インポートの場合などでは使うモデルのリレーション先が TYPE_CHECKING によりロードされないケースがありえるため明示的にロードする必要がある。
@@ -14,7 +14,7 @@ from models import Student
 faker = Faker(["ja-JP"])
 
 
-def test_select():
+def test_select_all():
     """生徒の一覧を出力する
 
     ref: https://docs.sqlalchemy.org/en/20/tutorial/data_select.html
@@ -30,6 +30,22 @@ def test_select():
             print(
                 f"### student id[{student.id}] name[{student.name}] gender[{student.gender}] is_active[{student.is_active}]"
             )
+
+
+def test_select_scalar():
+    """単一の生徒情報を出力する"""
+    with Session() as session:
+        stmt = select(Student).where(Student.id == 1, Student.is_active == false())
+        # TODO: where に `foo is False` のような書き方は、動くが期待しない結果になるため注意！
+        # ref: https://dev.classmethod.jp/articles/tips-for-boolean-type-filtering-with-flake8-in-sqlalchemy/
+        # stmt = select(Student).where(Student.id == 1, Student.is_active is False)
+        student = session.execute(stmt).scalar()
+        if student:
+            print(
+                f"### student id[{student.id}] name[{student.name}] gender[{student.gender}] is_active[{student.is_active}]"
+            )
+        else:
+            print("### student is None")
 
 
 def test_insert():
