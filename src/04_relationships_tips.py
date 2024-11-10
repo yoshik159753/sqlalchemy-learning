@@ -23,7 +23,9 @@ from models import Clazz, Email, Gender, Student, StudentClazz, Teacher
 
 def test_basic_relationship():
     with Session() as session:
-        student1 = Student(name="name", gender=Gender.MALE, address="address", score=50)
+        student1 = Student(
+            name="name", gender=Gender.MALE, address="address", score=50, is_active=True
+        )
 
         # Student モデルに emails のリレーションを宣言しているのでアクセスできる (現状は空配列)
         print(f"### student1.emails[{student1.emails}]")
@@ -69,7 +71,9 @@ def test_detached_instance_error():
     このため session 外でアクセスする場合には事前に session 内でアクセスしておくと良い。
     """
     with Session() as session:
-        student = Student(name="name", gender=Gender.MALE, address="address", score=50)
+        student = Student(
+            name="name", gender=Gender.MALE, address="address", score=50, is_active=True
+        )
         session.add(student)
         session.commit()
     with pytest.raises(DetachedInstanceError) as e:
