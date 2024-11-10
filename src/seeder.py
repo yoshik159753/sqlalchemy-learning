@@ -67,7 +67,7 @@ def add_students():
                 "name": f"S{faker.name_male()}"
                 if gender == Gender.MALE
                 else f"S{faker.name_female()}",
-                "gender": gender,
+                "gender": gender.value,
                 "address": faker.address(),
                 "score": faker.pyint(min_value=0, max_value=100),
                 "is_active": faker.pybool(truth_probability=75),

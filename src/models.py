@@ -23,8 +23,8 @@ class Base(DeclarativeBase):
 
 
 class Gender(enum.Enum):
-    MALE = 1
-    FEMALE = 2
+    MALE = "male"
+    FEMALE = "female"
 
 
 class Student(Base):
@@ -46,15 +46,25 @@ class Student(Base):
 
     id: Mapped[int] = mapped_column(INTEGER, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    # NOTE: Enum 型にすると、テーブルには定義値の文字列を insert する。
+    # NOTE: Enum 型にすると、テーブルには定義値(key)の文字列を insert する。
     #       この場合は MALE/FEMALE の Enum 型となる。
     #       DDL 的には `/`gender/` enum('MALE','FEMALE') NOT NULL,`
-    gender: Mapped[Gender] = mapped_column(Enum(Gender))
+    # gender: Mapped[Gender] = mapped_column(Enum(Gender))
     # NOTE: 既存のテーブルが存在し varchar に対して後付けで Enum 型にしたい場合は
     #       `native_enum=False` を付与する。
     #       enum クラスに存在しないメンバ変数が含まれた場合は LookupError の
     #       例外を発行する。
     # gender: Mapped[Gender] = mapped_column(Enum(Gender, native_enum=False))
+    # NOTE: enum の key ではなく value を適用したい場合は values_callable を使う。
+    gender: Mapped[Gender] = mapped_column(
+        Enum(
+            Gender,
+            name="gender_enum",
+            native_enum=False,
+            length=10,
+            values_callable=lambda x: [i.value for i in x],
+        )
+    )
     address: Mapped[str] = mapped_column(String(255), nullable=False)
     score: Mapped[int] = mapped_column(INTEGER, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False)
