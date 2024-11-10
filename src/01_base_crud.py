@@ -9,7 +9,7 @@ from sqlalchemy import delete, false, insert, select, update
 # ref: https://github.com/sqlalchemy/sqlalchemy/discussions/10334#discussioncomment-6970773  # noqa
 import models_club  # noqa
 from db import Session
-from models import Student
+from models import Gender, Student
 
 faker = Faker(["ja-JP"])
 
@@ -58,9 +58,10 @@ def test_insert():
     with Session() as session:
         stmt = insert(Student).values(
             name=faker.name(),
-            gender=faker.pyint(min_value=1, max_value=2),
+            gender=faker.random_element(elements=Gender),
             address=faker.address(),
             score=faker.pyint(min_value=0, max_value=100),
+            is_active=faker.pybool(truth_probability=75),
         )
         session.execute(stmt)
         session.commit()

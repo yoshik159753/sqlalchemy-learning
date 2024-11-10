@@ -20,7 +20,14 @@ def test_upsert():
     with Session() as session:
         stmt = (
             insert(Student)
-            .values(id=1, name="name", gender=Gender.MALE, address="address", score=50)
+            .values(
+                id=1,
+                name="name",
+                gender=Gender.MALE,
+                address="address",
+                score=50,
+                is_active=True,
+            )
             .on_duplicate_key_update(
                 name="name name name",
             )
@@ -37,24 +44,28 @@ def test_bulk_insert():
                 "gender": Gender.MALE,
                 "address": "address1",
                 "score": 33,
+                "is_active": True,
             },
             {
                 "name": "name2",
                 "gender": Gender.FEMALE,
                 "address": "address2",
                 "score": 66,
+                "is_active": False,
             },
             {
                 "name": "name3",
                 "gender": Gender.MALE,
                 "address": "address3",
                 "score": 99,
+                "is_active": True,
             },
         ]
         stmt = insert(Student).values(
             name=bindparam("name"),
             gender=bindparam("gender"),
             address=bindparam("address"),
+            is_active=bindparam("is_active"),
         )
         session.execute(stmt, students)
         session.commit()
@@ -213,7 +224,9 @@ def test_テストスイート向けのsavepointを利用したコミットの�
     connection = engine.connect()
     transaction = connection.begin()
     with Session(bind=connection, join_transaction_mode="create_savepoint") as session:
-        student = Student(name="name", gender=Gender.MALE, address="address", score=50)
+        student = Student(
+            name="name", gender=Gender.MALE, address="address", score=50, is_active=True
+        )
         session.add(student)
         session.commit()
         student_id = student.id
